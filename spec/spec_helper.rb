@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bundler/setup'
 require 'omniauth-oauth2-cognito'
 require 'byebug'

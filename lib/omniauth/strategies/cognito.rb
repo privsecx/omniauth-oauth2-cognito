@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'omniauth-oauth2'
 require 'jwt'
 
@@ -13,6 +15,10 @@ module OmniAuth
              token_url: '/oauth2/token'
       option :info_fields, %i[email]
       option :jwt_leeway, 60
+      option :jwt_jwks, nil
+      option :jwt_verify, false
+      option :jwt_key, nil
+      option :jwt_algorithm, 'RS256'
 
       uid do
         parsed_id_token && parsed_id_token['sub']
@@ -67,8 +73,8 @@ module OmniAuth
 
         @parsed_id_token ||= JWT.decode(
           id_token,
-          nil,
-          false,
+          options[:jwt_key],
+          options[:jwt_verify],
           verify_iss: options[:aws_region] && options[:user_pool_id],
           iss: "https://cognito-idp.#{options[:aws_region]}.amazonaws.com/#{options[:user_pool_id]}",
           verify_aud: true,
@@ -78,7 +84,9 @@ module OmniAuth
           verify_not_before: true,
           verify_iat: true,
           verify_jti: false,
-          leeway: options[:jwt_leeway]
+          leeway: options[:jwt_leeway],
+          jwks: options[:jwt_jwks],
+          algorithm: options[:jwt_algorithm]
         ).first
       end
     end
