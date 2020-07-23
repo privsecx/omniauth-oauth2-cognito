@@ -246,58 +246,10 @@ RSpec.describe OmniAuth::Strategies::Cognito do
         )
       end
 
-      before do
-        strategy.callback_phase
-      end
-
-      describe ':uid' do
-        it 'includes the `sub` claim from the ID token' do
-          expect(auth_hash[:uid]).to eql id_sub
-        end
-      end
-
-      describe ':info' do
-        it 'includes email by default' do
-          expect(auth_hash[:info]).to eql('email' => id_email)
-        end
-
-        context 'with info_fields option' do
-          let(:options) { { info_fields: %i[name email phone_number] } }
-
-          it 'adds additional fields' do
-            expect(auth_hash[:info]).to eql('name' => id_name, 'email' => id_email, 'phone_number' => id_phone)
-          end
-        end
-      end
-
-      describe ':credentials' do
-        it 'contains all tokens' do
-          expect(auth_hash[:credentials]).to eql(
-            'expires' => true,
-            'expires_at' => token_expires.to_i,
-            'id_token' => id_token_string,
-            'refresh_token' => refresh_token_string,
-            'token' => access_token_string
-          )
-        end
-      end
-
-      describe ':extra' do
-        it 'contains the parsed data from the id token' do
-          expect(auth_hash[:extra]).to eq(
-            'raw_info' => {
-              'sub' => id_sub,
-              'phone_number' => id_phone,
-              'email' => id_email,
-              'name' => id_name,
-              'iss' => 'https://cognito-idp.eu-west-1.amazonaws.com/user_pool_id',
-              'aud' => strategy.options[:client_id],
-              'exp' => token_expires.to_i,
-              'iat' => now.to_i,
-              'nbf' => now.to_i
-            }
-          )
-        end
+      it 'verifies the signature without errors' do
+        expect do
+          strategy.callback_phase
+        end.not_to raise_error
       end
     end
 
