@@ -11,8 +11,6 @@ RSpec.describe OmniAuth::Strategies::Cognito do
   let(:callback_url) { 'http://localhost/auth/cognito/callback?code=1234' } # TODO: tests for this
   let(:client_id) { 'ABCDE' }
   let(:client_secret) { '987654321' }
-  let(:private) { OpenSSL::PKey::RSA.generate 2048 }
-  let(:public) { private.public_key }
   let(:options) { {} }
   let(:oauth_client) { double('OAuth2::Client', auth_code: auth_code) }
   let(:session) { { 'omniauth.state' => 'some_state' } }
@@ -77,8 +75,7 @@ RSpec.describe OmniAuth::Strategies::Cognito do
   end
 
   describe 'auth hash' do
-    let(:options) { { aws_region: 'eu-west-1', user_pool_id: 'user_pool_id',
-      jwt_verify: true, jwt_key: private, algorithm: 'RS256'  } }
+    let(:options) { { aws_region: 'eu-west-1', user_pool_id: 'user_pool_id' } }
     let(:auth_hash) { env['omniauth.auth'] }
     let(:env) { {} }
     let(:request) { double('Rack::Request', params: { 'state' => strategy.session['omniauth.state'] }) }
@@ -104,13 +101,12 @@ RSpec.describe OmniAuth::Strategies::Cognito do
     let(:id_email) { 'some email address' }
     let(:id_name) { 'Some Name' }
 
-
     let(:id_token_string) do
       JWT.encode(
         {
           sub: id_sub,
           iat: now.to_i,
-          iss: 'https://cognito-idp.eu-west-1.amazonaws.com/user_pool_id',
+          iss: 'https://cognito.eu-west-1.amazonaws.com/user_pool_id',
           nbf: now.to_i,
           exp: token_expires.to_i,
           aud: strategy.options[:client_id],
@@ -118,8 +114,7 @@ RSpec.describe OmniAuth::Strategies::Cognito do
           email: id_email,
           name: id_name
         },
-        private,
-        'RS256'
+        '12345'
       )
     end
 
@@ -177,7 +172,7 @@ RSpec.describe OmniAuth::Strategies::Cognito do
             'phone_number' => id_phone,
             'email' => id_email,
             'name' => id_name,
-            'iss' => 'https://cognito-idp.eu-west-1.amazonaws.com/user_pool_id',
+            'iss' => 'https://cognito.eu-west-1.amazonaws.com/user_pool_id',
             'aud' => strategy.options[:client_id],
             'exp' => token_expires.to_i,
             'iat' => now.to_i,
