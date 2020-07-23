@@ -20,6 +20,11 @@ module OmniAuth
       option :jwt_key, nil
       option :jwt_algorithm, 'RS256'
 
+      def initialize(*args)
+        puts "BLARG!"
+        super(*args)
+      end
+
       uid do
         parsed_id_token && parsed_id_token['sub']
       end
@@ -65,29 +70,34 @@ module OmniAuth
       end
 
       def id_token
+        puts "FOO-BLARG!"
         access_token && access_token['id_token']
       end
 
       def parsed_id_token
         return nil unless id_token
 
-        @parsed_id_token ||= JWT.decode(
-          id_token,
-          options[:jwt_key],
-          options[:jwt_verify],
-          verify_iss: options[:aws_region] && options[:user_pool_id],
-          iss: "https://cognito-idp.#{options[:aws_region]}.amazonaws.com/#{options[:user_pool_id]}",
-          verify_aud: true,
-          aud: options[:client_id],
-          verify_sub: true,
-          verify_expiration: true,
-          verify_not_before: true,
-          verify_iat: true,
-          verify_jti: false,
-          leeway: options[:jwt_leeway],
-          jwks: options[:jwt_jwks],
-          algorithm: options[:jwt_algorithm]
-        ).first
+        @parsed_id_token ||=
+          begin
+            puts "JWT DECODE #{options[:jwt_key]} #{options[:jwt_verify]}"
+            JWT.decode(
+              id_token,
+              options[:jwt_key],
+              true, #options[:jwt_verify],
+              verify_iss: options[:aws_region] && options[:user_pool_id],
+              iss: "https://cognito-idp.#{options[:aws_region]}.amazonaws.com/#{options[:user_pool_id]}",
+              verify_aud: true,
+              aud: options[:client_id],
+              verify_sub: true,
+              verify_expiration: true,
+              verify_not_before: true,
+              verify_iat: true,
+              verify_jti: false,
+              leeway: options[:jwt_leeway],
+              jwks: options[:jwt_jwks],
+              algorithm: options[:jwt_algorithm]
+            ).first
+          end
       end
     end
   end

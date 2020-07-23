@@ -11,7 +11,9 @@ RSpec.describe OmniAuth::Strategies::Cognito do
   let(:callback_url) { 'http://localhost/auth/cognito/callback?code=1234' } # TODO: tests for this
   let(:client_id) { 'ABCDE' }
   let(:client_secret) { '987654321' }
-  let(:options) { {} }
+  let(:private) { OpenSSL::PKey::RSA.generate 2048 }
+  let(:public) { private.public_key }
+  let(:options) { { jwt_verify: true, jwt_key: private, algorithm: 'RS256' } }
   let(:oauth_client) { double('OAuth2::Client', auth_code: auth_code) }
   let(:session) { { 'omniauth.state' => 'some_state' } }
 
@@ -101,6 +103,7 @@ RSpec.describe OmniAuth::Strategies::Cognito do
     let(:id_email) { 'some email address' }
     let(:id_name) { 'Some Name' }
 
+
     let(:id_token_string) do
       JWT.encode(
         {
@@ -114,7 +117,8 @@ RSpec.describe OmniAuth::Strategies::Cognito do
           email: id_email,
           name: id_name
         },
-        '12345'
+        private,
+        'RS256'
       )
     end
 
