@@ -20,10 +20,10 @@ module OmniAuth
       option :jwt_key, nil
       option :jwt_algorithm, 'RS256'
 
-      def initialize(*args)
-        puts "BLARG!"
-        super(*args)
-      end
+      # def initialize(*args)
+      #   # puts "BLARG!"
+      #   super(*args)
+      # end
 
       uid do
         parsed_id_token && parsed_id_token['sub']
@@ -70,7 +70,6 @@ module OmniAuth
       end
 
       def id_token
-        puts "FOO-BLARG!"
         access_token && access_token['id_token']
       end
 
@@ -79,11 +78,11 @@ module OmniAuth
 
         @parsed_id_token ||=
           begin
-            puts "JWT DECODE #{options[:jwt_key]} #{options[:jwt_verify]}"
+            # puts "JWT DECODE #{options[:jwt_key]} #{options[:jwt_verify]}"
             JWT.decode(
               id_token,
               options[:jwt_key],
-              true, #options[:jwt_verify],
+              options[:jwt_verify],
               verify_iss: options[:aws_region] && options[:user_pool_id],
               iss: "https://cognito-idp.#{options[:aws_region]}.amazonaws.com/#{options[:user_pool_id]}",
               verify_aud: true,

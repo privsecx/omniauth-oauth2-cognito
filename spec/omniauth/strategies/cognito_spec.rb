@@ -13,7 +13,7 @@ RSpec.describe OmniAuth::Strategies::Cognito do
   let(:client_secret) { '987654321' }
   let(:private) { OpenSSL::PKey::RSA.generate 2048 }
   let(:public) { private.public_key }
-  let(:options) { { jwt_verify: true, jwt_key: private, algorithm: 'RS256' } }
+  let(:options) { {} }
   let(:oauth_client) { double('OAuth2::Client', auth_code: auth_code) }
   let(:session) { { 'omniauth.state' => 'some_state' } }
 
@@ -77,7 +77,8 @@ RSpec.describe OmniAuth::Strategies::Cognito do
   end
 
   describe 'auth hash' do
-    let(:options) { { aws_region: 'eu-west-1', user_pool_id: 'user_pool_id' } }
+    let(:options) { { aws_region: 'eu-west-1', user_pool_id: 'user_pool_id',
+      jwt_verify: true, jwt_key: private, algorithm: 'RS256'  } }
     let(:auth_hash) { env['omniauth.auth'] }
     let(:env) { {} }
     let(:request) { double('Rack::Request', params: { 'state' => strategy.session['omniauth.state'] }) }
@@ -109,7 +110,7 @@ RSpec.describe OmniAuth::Strategies::Cognito do
         {
           sub: id_sub,
           iat: now.to_i,
-          iss: 'https://cognito.eu-west-1.amazonaws.com/user_pool_id',
+          iss: 'https://cognito-idp.eu-west-1.amazonaws.com/user_pool_id',
           nbf: now.to_i,
           exp: token_expires.to_i,
           aud: strategy.options[:client_id],
@@ -176,7 +177,7 @@ RSpec.describe OmniAuth::Strategies::Cognito do
             'phone_number' => id_phone,
             'email' => id_email,
             'name' => id_name,
-            'iss' => 'https://cognito.eu-west-1.amazonaws.com/user_pool_id',
+            'iss' => 'https://cognito-idp.eu-west-1.amazonaws.com/user_pool_id',
             'aud' => strategy.options[:client_id],
             'exp' => token_expires.to_i,
             'iat' => now.to_i,
